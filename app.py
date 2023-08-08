@@ -9,7 +9,7 @@ lead_tracking = pd.read_csv("client_lead_tracking.csv")
 async def notify(caller_number: int, routing_number: int):
 
     # Mark entry
-    client_id = number_mapping.loc[number_mapping['user_number'] == caller_number, 'client_id'].iloc[0]
+    client_id = number_mapping.loc[number_mapping['routing_number'] == routing_number, 'client_id'].iloc[0]
     lead_tracking.loc[len(lead_tracking.index)] = [client_id, caller_number]
 
     client_number = number_mapping.loc[number_mapping['routing_number'] == routing_number, 'client_number'].iloc[0]
