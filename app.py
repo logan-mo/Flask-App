@@ -1,24 +1,17 @@
-from fastapi import FastAPI, status, HTTPException
-from sqlalchemy import create_engine, insert, MetaData, Table, text
-
-
-
+from fastapi import FastAPI, status
+import pandas as pd
 
 app = FastAPI()
-
-db_path = 'notifications.db'
-table_name = "data"
-
-# define meta information
-engine = create_engine('sqlite+pysqlite:///' + db_path)
+number_mapping = pd.read_csv("number_mapping.csv")
+lead_tracking = pd.read_csv("client_lead_tracking.csv")
 
 @app.get("/notify")
-async def notify(incoming_number: str, outgoing_number: str):
-    print("Incoming number: ", incoming_number)
-    print("Outgoing number: ", outgoing_number)
+async def notify(caller_number: int, routing_number: int):
 
-    with engine.connect() as conn:
-        conn.execute(text(f"INSERT INTO {table_name} (incoming_number, outgoing_number) VALUES ('{incoming_number}', '{outgoing_number}')"))
-        conn.commit()
+    # Mark entry
+    client_id = number_mapping.loc[number_mapping['user_number'] == caller_number, 'client_id'].iloc[0]
+    lead_tracking.loc[len(lead_tracking.index)] = [client_id, caller_number]
 
-    return {"status_code": status.HTTP_200_OK, "message": "Notification sent successfully"}
+    client_number = number_mapping.loc[number_mapping['routing_number'] == routing_number, 'client_number'].iloc[0]
+
+    return {"status_code": status.HTTP_200_OK, "message": "Notification sent successfully", "client_number": int(client_number)}
